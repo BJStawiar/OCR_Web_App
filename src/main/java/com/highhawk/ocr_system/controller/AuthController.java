@@ -1,23 +1,26 @@
 package com.highhawk.ocr_system.controller;
 
-import com.highhawk.ocr_system.dto.UserDTO;
-import com.highhawk.ocr_system.model.User;
+import com.highhawk.ocr_system.dto.LoginDTO;
+import com.highhawk.ocr_system.dto.RegisterDTO;
 import com.highhawk.ocr_system.security.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin
+@RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginDTO loginDTO) {
+        return ResponseEntity.ok(authService.login(loginDTO));
+    }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody UserDTO userDTO) {
-        User user = authService.register(userDTO);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<String> register(@RequestBody RegisterDTO registerDTO) {
+        return ResponseEntity.ok(authService.register(registerDTO));
     }
 }

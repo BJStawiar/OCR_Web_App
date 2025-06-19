@@ -1,31 +1,37 @@
 package com.highhawk.ocr_system.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import com.highhawk.ocr_system.dto.LoginDTO;
+import com.highhawk.ocr_system.dto.RegisterDTO;
+import com.highhawk.ocr_system.model.User;
+import com.highhawk.ocr_system.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.highhawk.ocr_system.dto.UserDTO;
-import com.highhawk.ocr_system.model.User;
-import com.highhawk.ocr_system.repository.UserRepository;
-
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    public AuthService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
+    public String login(LoginDTO loginDTO) throws AuthenticationException {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword())
+        );
+        return jwtService.generateToken(loginDTO.getEmail());
     }
 
-    public User register(UserDTO userDTO) {
+    public String register(RegisterDTO registerDTO) {
         User user = new User();
-        user.setEmail(userDTO.getEmail());
-        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        user.setRole("USER");
-        return userRepository.save(user);
+        user.setEmail(registerDTO.getEmail());
+        user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
+        userRepository.save(user);
+        return jwtService.generateToken(user.getEmail());
     }
 }
